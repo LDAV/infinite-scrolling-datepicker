@@ -8,22 +8,11 @@ The answer is simple: Because it’s infinitely scrolling.
 Most (if not all) datepickers resemble traditional paper calendars with one month on view
 at a time. In a digital setting with virtually endless viewports, this is an unnecessary limitation.
 
-## Don’t use jQuery 1.12.0, use 1.12.3 instead
-
-Note that the infinite scrolling datepicker is not compatible with jQuery 1.12.0 due to some internal
-weirdness in jQuery. Use jQuery 1.12.3 which works fine.
-
-## Demo and examples
-
-A [demo page with several examples](https://www.systemantics.net/datepicker/demo.html) is available.
-
-The demo page (`demo.html`) is also available in the repository.
-
 ## Usage
 
 Using the datepicker is easy:
 
-	$('.datepicker-input').datepicker();
+	$('.datepicker-input').date_picker();
 
 The datepicker binds to the `change`, `keyup`, `keydown`, `mouseenter`, `mouseleave` and `focus`
 events of the selected elements. Also, it sets the value of the selected elements using jQuery’s `.val()` method,
@@ -34,8 +23,8 @@ elements, even though you can bind the datepicker to any other element.
 
 Once bound, you can programmatically show and hide the datepicker like so:
 
-	$('.datepicker-input').datepicker('show');
-	$('.datepicker-input').datepicker('hide');
+	$('.datepicker-input').date_picker('show');
+	$('.datepicker-input').date_picker('hide');
 
 Keep in mind that the datepicker is shown automatically when the bound element gains focus
 and hidden when the focus is lost.
@@ -44,7 +33,7 @@ and hidden when the focus is lost.
 
 The datepicker calls the `onFocus` method when a date gets picked:
 
-	$('.datepicker-input').datepicker({
+	$('.datepicker-input').date_picker({
 		onSelect: function (date) {
 			// ...
 		}
@@ -52,12 +41,8 @@ The datepicker calls the `onFocus` method when a date gets picked:
 
 ### Setting the default date
 
-By default, the datepicker opens on the current date (“today”). Setting an individual
-default date is possible:
-
-	$('.datepicker-input').datepicker({
-		defaultDate: '2015-08-31'
-	});
+By default, the datepicker starts the input current value.
+If current value is empty, starts with current date.
 
 ### Internationalization / localization
 
@@ -95,10 +80,16 @@ support any desired display date format and don’t have to rely on the availabl
 
 This plugin is distributed under the terms of the MIT license.
 
-Copyright &copy; 2015 [Systemantics GmbH](http://www.systemantics.net/)
+Forked from 2015 [Systemantics GmbH](http://www.systemantics.net/)
 
 ## Changelog
+### v0.13:
+* main function changed from datepicker to date_picker, to avoid confict with jQuery UI datepicker
+* calendar starts with current input date 
+* added $.date_picker.setDefaults function to change options before start
+* added a default css
+* added a locale it_IT
 
 ### v0.10:
 
-- Initial release.
+- Initial release: 2015 [Systemantics GmbH](http://www.systemantics.net/)
