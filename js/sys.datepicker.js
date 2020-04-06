@@ -1,160 +1,190 @@
 /*
- * Systemantics infinite scrolling datepicker
- * v0.12.2
+ * infinite scrolling datepicker
+ * v0.13
  *
- * Copyright (C) 2015–2016 by Systemantics GmbH
- *
- * hello@systemantics.net
- * http://www.systemantics.net/
+ * forked from Systemantics GmbH
+ * labdav
  *
  * Licensed under the MIT license.
  */
 
 (function ($) {
-	var numYears = 5;
-
-	function formatDate(year, month, day) {
-		return ('0000' + year).substr(-4) + '-' + ('00' + month).substr(-2) + '-' + ('00' + day).substr(-2);
+	$.date_picker = {
+		setDefaults: function(options){
+			this._defaults = $.extend({}, this._defaults, options);
+			//return a(this._defaults,t||{}),this;
+		},
+		_defaults: {
+			onSelect: null,
+			//defaultDate: getTodayISO(),
+			monthNames: [ "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" ],
+			dayNamesMin: [ "Su", "Mo", "Tu", "We", "Th", "Fr", "Sa" ],
+			firstDay: 0,
+			prevYearText: '&lt;&lt;',
+			prevText: '&lt;',
+			currentText: 'Today',
+			nextText: '&gt;',
+			nextYearText: '&gt;&gt;',
+			convertISOToDisplayDate: false,
+			convertDisplayDateToISO: false
+		},
 	}
-
-	function getMonthHtml(year, month, settings) {
-		var monthHtml = '<div class="sys-datepicker-month" data-year="' + year + '" data-month="' + month + '"><div class="sys-datepicker-month-header">' + settings.monthNames[month - 1] + ' ' + year + '</div>';
-
-		var monthsFirstDayOfWeek = (new Date(formatDate(year, month, 1))).getUTCDay(),
-			daysPerMonth = month == 4 || month == 6 || month == 9 || month == 11 ? 30
-				: (month == 2 ? (year & 3 || !(year % 25) && year & 15 ? 28 : 29) : 31);
-
-		for (var i = 0; i < (monthsFirstDayOfWeek + 7 - settings.firstDay)%7; i++) {
-			monthHtml = monthHtml + '<div class="sys-datepicker-placeholder"/>';
+	
+	$.fn.date_picker = function (options, value) {
+		var numYears = 5;
+	
+		function formatDate(year, month, day) {
+			return ('0000' + year).substr(-4) + '-' + ('00' + month).substr(-2) + '-' + ('00' + day).substr(-2);
 		}
-		var today = getTodayISO(),
-			dow = monthsFirstDayOfWeek;
-		for (var d = 1; d <= daysPerMonth; d++) {
-			var classes = [ 'sys-datepicker-day' ],
-				thisDate = formatDate(year, month, d);
-			if (thisDate == today) {
-				classes.push('sys-datepicker-day-today');
+
+		function getMonthHtml(year, month, settings) {
+			var monthHtml = '<div class="sys-datepicker-month" data-year="' + year + '" data-month="' + month + '"><div class="sys-datepicker-month-header">' + settings.monthNames[month - 1] + ' ' + year + '</div>';
+
+			var monthsFirstDayOfWeek = (new Date(formatDate(year, month, 1))).getUTCDay(),
+				daysPerMonth = month == 4 || month == 6 || month == 9 || month == 11 ? 30
+					: (month == 2 ? (year & 3 || !(year % 25) && year & 15 ? 28 : 29) : 31);
+
+			for (var i = 0; i < (monthsFirstDayOfWeek + 7 - settings.firstDay)%7; i++) {
+				monthHtml = monthHtml + '<div class="sys-datepicker-placeholder"/>';
 			}
-			if (dow == 0 || dow == 6) {
-				classes.push('sys-datepicker-day-weekend');
+			var today = getTodayISO(),
+				dow = monthsFirstDayOfWeek;
+			for (var d = 1; d <= daysPerMonth; d++) {
+				var classes = [ 'sys-datepicker-day' ],
+					thisDate = formatDate(year, month, d);
+				if (thisDate == today) {
+					classes.push('sys-datepicker-day-today');
+				}
+				if (dow == 0 || dow == 6) {
+					classes.push('sys-datepicker-day-weekend');
+				}
+				monthHtml = monthHtml + '<div class="' + classes.join(' ') + '" data-date="' + thisDate + '">' + d + '</div>';
+
+				// Increase date of the week
+				dow = dow + 1;
+				if (dow == 7) {
+					dow = 0;
+				}
 			}
-			monthHtml = monthHtml + '<div class="' + classes.join(' ') + '" data-date="' + thisDate + '">' + d + '</div>';
 
-			// Increase date of the week
-			dow = dow + 1;
-			if (dow == 7) {
-				dow = 0;
+			monthHtml = monthHtml + '</div>';
+
+			return monthHtml;
+		}
+
+		function getYearHtml(year, settings) {
+			var yearHtml = '<div class="sys-datepicker-year" data-year="' + year + '">';
+
+			for (var m = 1; m <= 12; m++) {
+				yearHtml = yearHtml + getMonthHtml(year, m, settings);
+			}
+
+			yearHtml = yearHtml + '</div>';
+
+			return yearHtml;
+		}
+
+		function addYear(dp, year, settings) {
+			var dpBody = dp.find('.sys-datepicker-body');
+			var bottomYear = $('.sys-datepicker-year:eq(-1)').data('year');
+			var scrollTop;
+
+			if (year > bottomYear) {
+				// Append one at the bottom
+				dpBody.append(getYearHtml(year, settings));
+				// Remove one at the top while maintaining the scroll position
+				scrollTop = dpBody.scrollTop();
+				dp.find('.sys-datepicker-year:eq(0)').remove();
+				dpBody.scrollTop(scrollTop - dp.find('.sys-datepicker-year:eq(0)').outerHeight(true));
+			} else {
+				// Append year at the top while maintaining scroll position
+				scrollTop = dpBody.scrollTop();
+				dpBody.prepend(getYearHtml(year, settings));
+				dpBody.scrollTop(scrollTop + dp.find('.sys-datepicker-year:eq(0)').outerHeight(true));
+				// Remove one at the bottom
+				dp.find('.sys-datepicker-year:eq(-1)').remove();
 			}
 		}
 
-		monthHtml = monthHtml + '</div>';
+		function populate(dp, settings) {
+			var dpBody = dp.find('.sys-datepicker-body'),
+				startYear = parseInt(settings.defaultDate);
 
-		return monthHtml;
-	}
-
-	function getYearHtml(year, settings) {
-		var yearHtml = '<div class="sys-datepicker-year" data-year="' + year + '">';
-
-		for (var m = 1; m <= 12; m++) {
-			yearHtml = yearHtml + getMonthHtml(year, m, settings);
-		}
-
-		yearHtml = yearHtml + '</div>';
-
-		return yearHtml;
-	}
-
-	function addYear(dp, year, settings) {
-		var dpBody = dp.find('.sys-datepicker-body');
-		var bottomYear = $('.sys-datepicker-year:eq(-1)').data('year');
-
-		if (year > bottomYear) {
-			// Append one at the bottom
-			dpBody.append(getYearHtml(year, settings));
-			// Remove one at the top while maintaining the scroll position
-			var scrollTop = dpBody.scrollTop();
-			dp.find('.sys-datepicker-year:eq(0)').remove();
-			dpBody.scrollTop(scrollTop - dp.find('.sys-datepicker-year:eq(0)').outerHeight(true));
-		} else {
-			// Append year at the top while maintaining scroll position
-			var scrollTop = dpBody.scrollTop();
-			dpBody.prepend(getYearHtml(year, settings));
-			dpBody.scrollTop(scrollTop + dp.find('.sys-datepicker-year:eq(0)').outerHeight(true));
-			// Remove one at the bottom
-			dp.find('.sys-datepicker-year:eq(-1)').remove();
-		}
-	}
-
-	function populate(dp, settings) {
-		var dpBody = dp.find('.sys-datepicker-body'),
-			startYear = parseInt(settings.defaultDate);
-
-		// Add years
-		for (var y = startYear - (numYears - 1) / 2; y <= startYear + (numYears - 1) / 2; y++) {
-			dpBody.append(getYearHtml(y, settings));
-		}
-	}
-
-	function gotoYearMonth(dp, year, month, settings) {
-		var dpBody = dp.find('.sys-datepicker-body');
-		var selector = '.sys-datepicker-month[data-year="' + year + '"]';
-
-		if (month >= 1 && month <= 12) {
-			selector = selector + '[data-month="' + month + '"]';
-		}
-
-		var monthEl = dp.find(selector);
-		if (monthEl.length == 0) {
-			// Append year
-			addYear(dp, year, settings);
-			monthEl = dp.find(selector)
-		}
-
-		// Remove all other years
-		dp.find('.sys-datepicker-year:not([data-year="' + year + '"])').remove();
-		// Add the years before ...
-		for (var y = year - 1; y >= year - (numYears - 1) / 2; y--) {
-			dpBody.prepend(getYearHtml(y, settings));
-		}
-		// ... and after
-		for (var y = year + 1; y <= year + (numYears - 1) / 2; y++) {
-			dpBody.append(getYearHtml(y, settings));
-		}
-
-		// Scroll to that year and month
-		dpBody.scrollTop(dpBody.scrollTop() + monthEl.position().top);
-		// dpBody.animate({scrollTop: dpBody.scrollTop() + monthEl.position().top}, 250);
-	}
-
-	function getCurrent(dp) {
-		var current;
-
-		dp.find('.sys-datepicker-month').each(function () {
-			var monthEl = $(this);
-
-			if (monthEl.position().top + monthEl.outerHeight(true) / 2 > 0) {
-				current = {
-					year: monthEl.data('year'),
-					month: monthEl.data('month')
-				};
-				return false;
+			// Add years
+			for (var y = startYear - (numYears - 1) / 2; y <= startYear + (numYears - 1) / 2; y++) {
+				dpBody.append(getYearHtml(y, settings));
 			}
-		});
+		}
 
-		return current;
-	}
+		function gotoYearMonth(dp, year, month, settings) {
+			var dpBody = dp.find('.sys-datepicker-body');
+			var selector = '.sys-datepicker-month[data-year="' + year + '"]';
 
-	function getTodayISO() {
-		var today = new Date();
+			if (month >= 1 && month <= 12) {
+				selector = selector + '[data-month="' + month + '"]';
+			}
 
-		return formatDate(today.getFullYear(), today.getMonth() + 1, today.getDate());
-	}
+			var monthEl = dp.find(selector);
+			if (monthEl.length == 0) {
+				// Append year
+				addYear(dp, year, settings);
+				monthEl = dp.find(selector)
+			}
 
-	function isValidISODate(date) {
-		return date.match(/^\d{4}-\d{2}-\d{2}/) == true;
-	}
+			// Remove all other years
+			dp.find('.sys-datepicker-year:not([data-year="' + year + '"])').remove();
+			// Add the years before ...
+			var y;
+			for (y = year - 1; y >= year - (numYears - 1) / 2; y--) {
+				dpBody.prepend(getYearHtml(y, settings));
+			}
+			// ... and after
+			for (y = year + 1; y <= year + (numYears - 1) / 2; y++) {
+				dpBody.append(getYearHtml(y, settings));
+			}
 
-	$.fn.datepicker = function (options, value) {
+			// Scroll to that year and month
+			dpBody.scrollTop(dpBody.scrollTop() + monthEl.position().top);
+
+			dp.find(".sys-datepicker-day").removeClass("current");
+			dp.find(".sys-datepicker-day[data-date=" + settings.defaultDate + "]").addClass("current");
+
+		}
+
+		function getCurrent(dp) {
+			var current;
+
+			dp.find('.sys-datepicker-month').each(function () {
+				var monthEl = $(this);
+
+				if (monthEl.position().top + monthEl.outerHeight(true) / 2 > 0) {
+					current = {
+						year: monthEl.data('year'),
+						month: monthEl.data('month')
+					};
+					return false;
+				}
+			});
+
+			return current;
+		}
+
+		function getTodayISO() {
+			var today = new Date();
+
+			return formatDate(today.getFullYear(), today.getMonth() + 1, today.getDate());
+		}
+
+		function isValidISODate(date) {
+			return date.match(/^\d{4}-\d{2}-\d{2}/) == true;
+		}
+		
+		var settings = $.extend({}, $.date_picker._defaults);
+		if (typeof settings.defaultDate === "undefined" || !isValidISODate(settings.defaultDate)) {
+			settings.defaultDate = getTodayISO();
+		}
+		settings = $.extend(settings, options);
+
 		if (options == 'show') {
 			this.trigger('show.sys-datepicker');
 
@@ -168,20 +198,6 @@
 			this.trigger('removeDates.sys-datepicker', [value]);
 
 		} else {
-			var settings = $.extend({
-				onSelect: null,
-				defaultDate: getTodayISO(),
-				monthNames: [ "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" ],
-				dayNamesMin: [ "Su", "Mo", "Tu", "We", "Th", "Fr", "Sa" ],
-				firstDay: 0,
-				prevYearText: '&lt;&lt;',
-				prevText: '&lt;',
-				currentText: 'Today',
-				nextText: '&gt;',
-				nextYearText: '&gt;&gt;',
-				convertISOToDisplayDate: false,
-				convertDisplayDateToISO: false
-			}, options);
 
 			this.each(function () {
 				var el = $(this);
@@ -193,9 +209,6 @@
 
 				el.addClass('sys-datepicker-attached');
 
-				if (!isValidISODate(settings.defaultDate)) {
-					settings.defaultDate = getTodayISO();
-				}
 
 				var dp = $('<div class="sys-datepicker" style="display:none"/>').appendTo('body'),
 					dpContent = $('<div class="sys-datepicker-content"/>').appendTo(dp),
@@ -221,10 +234,12 @@
 				gotoYearMonth(dp, parseInt(settings.defaultDate), parseInt(settings.defaultDate.substr(5, 2)), settings);
 				dp.hide();
 
-				var prevScrollTop = dpBody.scrollTop();
+//				var prevScrollTop = dpBody.scrollTop();
 				dpBody.on('scroll', function () {
-					var scrollTop = dpBody.scrollTop();
-
+//					var scrollTop = dpBody.scrollTop();
+					
+/*
+					var direction;
 					if (scrollTop > prevScrollTop) {
 						direction = 1;
 					} else if (scrollTop < prevScrollTop) {
@@ -232,7 +247,8 @@
 					} else {
 						direction = 0;
 					}
-					prevScrollTop = scrollTop;
+*/
+//					prevScrollTop = scrollTop;
 
 					var current = getCurrent(dp);
 					if (typeof current != "undefined") {
@@ -243,12 +259,12 @@
 							addYear(dp, bottomYear + 1, settings);
 						} else if (current.year == topYear) {
 							addYear(dp, topYear - 1, settings);
-							prevScrollTop = dpBody.scrollTop();
+	//						prevScrollTop = dpBody.scrollTop();
 						}
 					}
 				});
 
-				var prevVal = null;
+				//var prevVal = null;
 				el.on('keyup change', function () {
 					var val = $(this).val(),
 						comp,
@@ -266,7 +282,7 @@
 
 					if (!!comp && !!comp[1]) {
 						year = parseInt(comp[1]);
-						month = !!comp[3] ? Math.max(1, Math.min(12, parseInt(comp[3]))) : 1;
+						month = comp[3] ? Math.max(1, Math.min(12, parseInt(comp[3]))) : 1;
 						gotoYearMonth(dp, year, month, settings);
 						setInputDate(val.trim());
 					}
@@ -288,12 +304,13 @@
 
 					// Set value
 					el.val(date);
-					el.focus();
+					//el.focus();
 
 					// Callback
 					if ($.isFunction(settings.onSelect)) {
 						settings.onSelect.call(el.eq(0), date);
 					}
+					dp.hide();
 				});
 
 				dp.on('click', '.sys-datepicker-button-prevmonth', function () {
@@ -316,39 +333,56 @@
 						current.month = 1;
 					}
 					gotoYearMonth(dp, current.year, current.month, settings);
-					el.focus();
+					//el.focus();
 				});
 
 				dp.on('click', '.sys-datepicker-button-prevyear', function () {
 					var current = getCurrent(dp);
 
 					gotoYearMonth(dp, current.year - 1, current.month, settings);
-					el.focus();
+					//el.focus();
 				});
 
 				dp.on('click', '.sys-datepicker-button-nextyear', function () {
 					var current = getCurrent(dp);
 
 					gotoYearMonth(dp, current.year + 1, current.month, settings);
-					el.focus();
+					//el.focus();
 				});
 
 				dp.on('click', '.sys-datepicker-button-today', function () {
 					var today = new Date();
 
 					gotoYearMonth(dp, today.getFullYear(), today.getMonth() + 1, settings);
-					el.focus();
+					//el.focus();
 				});
 
 				el.on('focus click show.sys-datepicker', function () {
 					var p = el.offset();
-
+					
 					setInputDate(el.val().trim());
+					var y = p.top;
+					if(y+306 > document.body.clientHeight) {
+						y = p.top - 306;
+					} else {
+						y = y + el.outerHeight();
+					}
+					y = y < 0 ? 0 : y;
+					var x = p.left;
+					if(x+306 > document.body.clientWidth) {
+						x = p.left + el.outerWidth() - 250 ;
+					}
+					x = x < 0 ? 0 : x;
+					
+					if ($.isFunction(settings.convertDisplayDateToISO)) {
+						settings.defaultDate = settings.convertDisplayDateToISO(el.val().trim());
+					}
+					gotoYearMonth(dp, parseInt(settings.defaultDate), parseInt(settings.defaultDate.substr(5, 2)), settings);
 
 					dp.css({
 						position: 'absolute',
-						left: p.left,
-						top: p.top + el.outerHeight()
+						left: x,
+						top: y
 					});
 					dp.show();
 				});
