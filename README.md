@@ -1,4 +1,4 @@
-# Systemantics infinite scrolling datepicker
+# Infinite scrolling datepicker
 
 ## Description
 
