@@ -84,7 +84,7 @@ Forked from 2015 [Systemantics GmbH](http://www.systemantics.net/)
 
 ## Changelog
 ### v0.13:
-* main function changed from datepicker to date_picker, to avoid confict with jQuery UI datepicker
+* main function changed from datepicker to date_picker, to avoid conficts with jQuery UI datepicker
 * calendar starts with current input date 
 * added $.date_picker.setDefaults function to change options before start
 * added a default css
