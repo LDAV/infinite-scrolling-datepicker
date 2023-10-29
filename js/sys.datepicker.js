@@ -305,6 +305,8 @@
 					// Set value
 					el.val(date);
 					//el.focus();
+					var event = new Event('change');
+					el[0].dispatchEvent(event);
 
 					// Callback
 					if ($.isFunction(settings.onSelect)) {
