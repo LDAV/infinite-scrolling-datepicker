@@ -2,11 +2,18 @@
 
 ## Description
 
+A lightweight, fast and touch-friendly JavaScript datepicker with infinite scroll of months and years.
+
 Why a new datepicker if there is the jQuery UI datepicker that’s heavily used everywhere?
 The answer is simple: Because it’s infinitely scrolling.
 
 Most (if not all) datepickers resemble traditional paper calendars with one month on view
 at a time. In a digital setting with virtually endless viewports, this is an unnecessary limitation.
+
+- Built for modern web apps.
+- Supports dynamic loading of months.
+- Customizable appearance via CSS.
+- No dependencies (vanilla JS + jQuery).
 
 From an idea of 2015 [Systemantics GmbH](http://www.systemantics.net/)
 
