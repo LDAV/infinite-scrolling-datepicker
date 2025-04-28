@@ -13,7 +13,6 @@ at a time. In a digital setting with virtually endless viewports, this is an unn
 - Built for modern web apps.
 - Supports dynamic loading of months.
 - Customizable appearance via CSS.
-- No dependencies (vanilla JS + jQuery).
 
 From an idea of 2015 [Systemantics GmbH](http://www.systemantics.net/)
 
