@@ -85,6 +85,9 @@ This plugin is distributed under the terms of the MIT license.
 Forked from 2015 [Systemantics GmbH](http://www.systemantics.net/)
 
 ## Changelog
+### v0.2:
+* fix div intersections
+
 ### v0.13:
 * main function changed from datepicker to date_picker, to avoid conficts with jQuery UI datepicker
 * calendar starts with current input date 
