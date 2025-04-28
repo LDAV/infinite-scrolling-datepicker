@@ -1,6 +1,6 @@
 .sys-datepicker {background-color: #fff; box-shadow: 5px 5px 10px 0px rgba(0,0,0,0.1); height: 300px; position: relative; border: 1px solid #f0f0f0;}
 .sys-datepicker-content {width: 100%; height: 100%; overflow: hidden;}
-.sys-datepicker-body {overflow: scroll; -webkit-overflow-scrolling: touch; position: relative; height: 100%; clear: left; width: calc(100% + 15px);}
+.sys-datepicker-body {overflow: scroll; -webkit-overflow-scrolling: touch; position: relative; height: 100%; clear: left; width: calc(100% + 15px); will-change: transform;}
 .sys-datepicker-day, .sys-datepicker-days-dow, .sys-datepicker-placeholder { float: left;text-align: center;}
 .sys-datepicker-day, .sys-datepicker-placeholder {cursor: pointer; margin: 2.5px; width: 30px; line-height: 24px;}
 .sys-datepicker-days-dow {width: 30px; margin: 2.5px;}
