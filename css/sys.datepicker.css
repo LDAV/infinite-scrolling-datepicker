@@ -18,3 +18,11 @@
 .sys-datepicker-hover {background: #000; color: #fff;}
 .sys-datepicker-day.current{background: #C93448;color: #FFF;}
 .sys-datepicker-day-today, .sys-datepicker-day-today.current {background: #fdff90;color: #000;}
+@media (prefers-color-scheme: dark) {
+.sys-datepicker { background-color: #222; border-color: #444; color: #eee;}
+.sys-datepicker-month-header { border-top-color: #555; color: #ddd;}
+.sys-datepicker-day, .sys-datepicker-placeholder { color: #ccc;}
+.sys-datepicker-day-weekend {color: #999;}
+.sys-datepicker-day-today, .sys-datepicker-day-today.current { background: #ffc107; color: #000;}
+.sys-datepicker-day.current { background: #c93448; color: #fff;}
+}
