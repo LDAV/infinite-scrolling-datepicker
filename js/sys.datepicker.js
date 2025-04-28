@@ -1,6 +1,6 @@
 /*
  * infinite scrolling datepicker
- * v0.13
+ * v0.2
  *
  * forked from Systemantics GmbH
  * labdav
@@ -34,41 +34,40 @@
 		var numYears = 5;
 	
 		function formatDate(year, month, day) {
-			return ('0000' + year).substr(-4) + '-' + ('00' + month).substr(-2) + '-' + ('00' + day).substr(-2);
+			return ('0000' + year).slice(-4) + '-' + ('00' + month).slice(-2) + '-' + ('00' + day).slice(-2);
 		}
 
 		function getMonthHtml(year, month, settings) {
-			var monthHtml = '<div class="sys-datepicker-month" data-year="' + year + '" data-month="' + month + '"><div class="sys-datepicker-month-header">' + settings.monthNames[month - 1] + ' ' + year + '</div>';
-
+			var monthHtml = '<div class="sys-datepicker-month" data-year="' + year + '" data-month="' + month + '">';
+			monthHtml += '<div class="sys-datepicker-month-header">' + settings.monthNames[month - 1] + ' ' + year + '</div>';
+			monthHtml += '<div class="sys-datepicker-month-days">';
+	
 			var monthsFirstDayOfWeek = (new Date(formatDate(year, month, 1))).getUTCDay(),
-				daysPerMonth = month == 4 || month == 6 || month == 9 || month == 11 ? 30
-					: (month == 2 ? (year & 3 || !(year % 25) && year & 15 ? 28 : 29) : 31);
-
-			for (var i = 0; i < (monthsFirstDayOfWeek + 7 - settings.firstDay)%7; i++) {
-				monthHtml = monthHtml + '<div class="sys-datepicker-placeholder"/>';
+					daysPerMonth = month == 4 || month == 6 || month == 9 || month == 11 ? 30
+							: (month == 2 ? (year & 3 || !(year % 25) && year & 15 ? 28 : 29) : 31);
+	
+			for (var i = 0; i < (monthsFirstDayOfWeek + 7 - settings.firstDay) % 7; i++) {
+					monthHtml += '<div class="sys-datepicker-placeholder"></div>';  // <-- FIXED!
 			}
+	
 			var today = getTodayISO(),
-				dow = monthsFirstDayOfWeek;
+					dow = monthsFirstDayOfWeek;
 			for (var d = 1; d <= daysPerMonth; d++) {
-				var classes = [ 'sys-datepicker-day' ],
-					thisDate = formatDate(year, month, d);
-				if (thisDate == today) {
-					classes.push('sys-datepicker-day-today');
-				}
-				if (dow == 0 || dow == 6) {
-					classes.push('sys-datepicker-day-weekend');
-				}
-				monthHtml = monthHtml + '<div class="' + classes.join(' ') + '" data-date="' + thisDate + '">' + d + '</div>';
-
-				// Increase date of the week
-				dow = dow + 1;
-				if (dow == 7) {
-					dow = 0;
-				}
+					var classes = ['sys-datepicker-day'],
+							thisDate = formatDate(year, month, d);
+					if (thisDate == today) {
+							classes.push('sys-datepicker-day-today');
+					}
+					if (dow == 0 || dow == 6) {
+							classes.push('sys-datepicker-day-weekend');
+					}
+					monthHtml += '<div class="' + classes.join(' ') + '" data-date="' + thisDate + '">' + d + '</div>';
+	
+					dow = (dow + 1) % 7;
 			}
-
-			monthHtml = monthHtml + '</div>';
-
+	
+			monthHtml += '</div></div>';  // Close month-days and month
+	
 			return monthHtml;
 		}
 
@@ -231,7 +230,7 @@
 
 				populate(dp, settings);
 				dp.show();
-				gotoYearMonth(dp, parseInt(settings.defaultDate), parseInt(settings.defaultDate.substr(5, 2)), settings);
+				gotoYearMonth(dp, parseInt(settings.defaultDate), parseInt(settings.defaultDate.slice(5, 7)), settings);
 				dp.hide();
 
 //				var prevScrollTop = dpBody.scrollTop();
@@ -379,7 +378,7 @@
 					if ($.isFunction(settings.convertDisplayDateToISO)) {
 						settings.defaultDate = settings.convertDisplayDateToISO(el.val().trim());
 					}
-					gotoYearMonth(dp, parseInt(settings.defaultDate), parseInt(settings.defaultDate.substr(5, 2)), settings);
+					gotoYearMonth(dp, parseInt(settings.defaultDate), parseInt(settings.defaultDate.slice(5, 7)), settings);
 
 					dp.css({
 						position: 'absolute',
